@@ -14,11 +14,13 @@ import 'add_property_sheet.dart';
 class PropertyUnitDetailsScreen extends StatefulWidget {
   final PropertiesViewModel viewModel;
   final String propertyName;
+  final String imageUrl;
 
   const PropertyUnitDetailsScreen({
     super.key,
     required this.viewModel,
     this.propertyName = 'Green View Student Hostel',
+    this.imageUrl = 'assets/property1.png',
   });
 
   @override
@@ -32,7 +34,7 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -168,273 +170,289 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: AppColors.primary,
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'fab_add_unit',
-          onPressed: () => _showAddUnitSheet(context),
-          backgroundColor: AppColors.primary,
-          elevation: 4,
-          shape: const CircleBorder(),
-          child: const Icon(Icons.add_rounded, size: 26, color: Colors.white),
-        ),
-        body: ListenableBuilder(
-          listenable: widget.viewModel,
-          builder: (context, _) {
-            final rooms = widget.viewModel.rooms;
-            final totalUnits = rooms.length;
-            final occupiedUnits = rooms.where((r) => r.beds.any((b) => b.status == 'Occupied')).length;
-            final vacantUnits = totalUnits - occupiedUnits;
-            final totalTenants = rooms.fold<int>(0, (sum, r) => sum + r.beds.where((b) => b.status == 'Occupied').length);
-
-            return Column(
-              children: [
-                // 1. Sleek Royal Blue Header Banner
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, Color(0xFF0052D4)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: CustomPaint(
-                    painter: HeaderWavePainter(),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: topPadding + 6,
-                        left: 16,
-                        right: 16,
-                        bottom: 16,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Top Bar (Back Button + Edit Action)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (context.canPop()) {
-                                    context.pop();
-                                  } else {
-                                    Navigator.of(context).maybePop();
-                                  }
-                                },
-                                child: Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-
-                          // Property Title Row
-                          Row(
-                            children: [
-                              Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                                ),
-                                child: const Center(
-                                  child: Icon(Icons.domain_rounded, color: Colors.white, size: 24),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.propertyName,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        letterSpacing: -0.4,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Managed Property & Units',
-                                      style: TextStyle(fontSize: 11.5, color: Colors.white70, fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Summary Metric Bar Strip
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildHeaderMetric('$totalUnits', 'Total Units', Colors.white),
-                                Container(width: 1, height: 26, color: Colors.white24),
-                                _buildHeaderMetric('$occupiedUnits', 'Occupied', const Color(0xFF4ADE80)),
-                                Container(width: 1, height: 26, color: Colors.white24),
-                                _buildHeaderMetric('$vacantUnits', 'Vacant', const Color(0xFFFBBF24)),
-                                Container(width: 1, height: 26, color: Colors.white24),
-                                _buildHeaderMetric('$totalTenants', 'Tenants', Colors.white),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 2. Main Light Body View
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    color: const Color(0xFFF8FAFC),
-                    child: Column(
-                      children: [
-                        // Sub-Tab Strip with Grid/List Toggle & Sort
-                        Container(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 10),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1.0)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Row(
-                                children: [
-                                  _buildCustomTabItem(0, 'Units'),
-                                  const SizedBox(width: 24),
-                                  _buildCustomTabItem(1, 'Tenants'),
-                                  const SizedBox(width: 24),
-                                  _buildCustomTabItem(2, 'Overview'),
-                                ],
-                              ),
-
-                              // Sort Button
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => ToastUtils.showInfo(context, 'Sorting units'),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF8FAFC),
-                                          borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                                        ),
-                                        child: const Row(
-                                          children: [
-                                            Icon(Icons.swap_vert_rounded, size: 14, color: Color(0xFF0F172A)),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'Sort',
-                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Sub-Tab Views
-                        Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
-                              _buildUnitsTab(context, rooms),
-                              _buildTenantsTab(context, rooms),
-                              _buildOverviewTab(context, totalUnits, occupiedUnits, vacantUnits, totalTenants),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Navigator.of(context).maybePop();
+            }
           },
         ),
+        title: Text(
+          widget.propertyName,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.black),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: AppColors.borderLight, width: 1.0)),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: 1, // Properties is tab 1
+          onTap: (idx) {
+            if (idx == 1) return;
+            context.pop(); // Go back to dashboard to handle other tabs
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textMutedLight,
+          selectedFontSize: 11,
+          unselectedFontSize: 11,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined, size: 22), activeIcon: Icon(Icons.home_rounded, size: 22), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.domain_outlined, size: 22), activeIcon: Icon(Icons.domain_rounded, size: 22), label: 'Properties'),
+            BottomNavigationBarItem(icon: Icon(Icons.people_outline_rounded, size: 22), activeIcon: Icon(Icons.people_rounded, size: 22), label: 'Tenants'),
+            BottomNavigationBarItem(icon: Icon(Icons.monetization_on_outlined, size: 22), activeIcon: Icon(Icons.monetization_on_rounded, size: 22), label: 'Rent'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded, size: 22), activeIcon: Icon(Icons.person_rounded, size: 22), label: 'Profile'),
+          ],
+        ),
+      ),
+      body: ListenableBuilder(
+        listenable: widget.viewModel,
+        builder: (context, _) {
+          final rooms = widget.viewModel.rooms;
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image Container
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: 160,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                image: DecorationImage(
+                                  image: widget.imageUrl.startsWith('http')
+                                      ? NetworkImage(widget.imageUrl) as ImageProvider
+                                      : AssetImage(widget.imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Active',
+                                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Title & Address
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          '${widget.propertyName} (Hostel)',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          'MG Road, Indore, Madhya Pradesh',
+                          style: TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Info Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.business_outlined, size: 16, color: Colors.black54),
+                            const SizedBox(width: 6),
+                            const Text(
+                              '3 Floors • 24 Rooms • 52 Beds',
+                              style: TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Action Buttons
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildActionButton(Icons.share_outlined, 'Share Link'),
+                            _buildActionButton(Icons.people_outline, 'Employees'),
+                            _buildActionButton(Icons.restaurant_menu_outlined, 'Mess Menu'),
+                            _buildActionButton(Icons.edit_outlined, 'Edit Property'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // TabBar
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: Colors.black54,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                          indicatorColor: AppColors.primary,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          dividerColor: const Color(0xFFF1F5F9),
+                          tabAlignment: TabAlignment.start,
+                          padding: EdgeInsets.zero,
+                          labelPadding: const EdgeInsets.only(right: 24),
+                          tabs: const [
+                            Tab(text: 'Overview'),
+                            Tab(text: 'Rooms & Beds'),
+                            Tab(text: 'Tenants'),
+                            Tab(text: 'Finance'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // TabBar View content inside ScrollView
+                      IndexedStack(
+                        index: _tabController.index,
+                        children: [
+                          _buildNewOverviewTab(),
+                          _buildUnitsTab(context, rooms), // Existing Units tab
+                          _buildTenantsTab(context, rooms), // Existing Tenants tab
+                          const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('Finance Data', style: TextStyle(color: Colors.black54)))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeaderMetric(String count, String label, Color color) {
+  Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
-        Text(count, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: color)),
-        const SizedBox(height: 1),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w500)),
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 24),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+        ),
       ],
     );
   }
 
-  Widget _buildCustomTabItem(int idx, String title) {
-    final isSelected = _tabController.index == idx;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _tabController.animateTo(idx));
-      },
+  Widget _buildNewOverviewTab() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Property Overview',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          const SizedBox(height: 16),
+          // 4-item grid
+          Row(
+            children: [
+              Expanded(child: _buildOverviewMetric('Total Beds', '52')),
+              const SizedBox(width: 8),
+              Expanded(child: _buildOverviewMetric('Occupied Beds', '38')),
+              const SizedBox(width: 8),
+              Expanded(child: _buildOverviewMetric('Available Beds', '14')),
+              const SizedBox(width: 8),
+              Expanded(child: _buildOverviewMetric('Occupancy', '73%')),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 2-item grid
+          Row(
+            children: [
+              Expanded(child: _buildOverviewMetric('Monthly Rent', '₹2,63,500')),
+              const SizedBox(width: 12),
+              Expanded(child: _buildOverviewMetric('Pending Rent', '₹74,500')),
+            ],
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewMetric(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
         children: [
           Text(
-            title,
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-              color: isSelected ? AppColors.primary : const Color(0xFF64748B),
-            ),
+            label,
+            style: const TextStyle(fontSize: 9, color: Colors.black54, fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          Container(
-            height: 2.5,
-            width: isSelected ? 44 : 0,
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(2),
-            ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black),
           ),
         ],
       ),
@@ -453,7 +471,8 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
   // --- 2-Column Grid View (Ultra Spacious, Modern Pure White Cards) ---
   Widget _buildUnitsGridView(BuildContext context, List<RoomModel> rooms) {
     return GridView.builder(
-      physics: const ClampingScrollPhysics(),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 24),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -591,7 +610,8 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
   // --- 1-Column List View (Full Width Ultra-Sleek Row Card) ---
   Widget _buildUnitsListView(BuildContext context, List<RoomModel> rooms) {
     return ListView.builder(
-      physics: const ClampingScrollPhysics(),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 24),
       itemCount: rooms.length,
       itemBuilder: (ctx, idx) {
@@ -599,8 +619,6 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
         final occupiedBeds = room.beds.where((b) => b.status == 'Occupied').length;
         final totalBeds = room.beds.length;
         final isFull = occupiedBeds == totalBeds;
-        final vacantBeds = totalBeds - occupiedBeds;
-
         return GestureDetector(
           onTap: () => _showRoomDetailsModal(context, room),
           child: Container(
@@ -781,8 +799,10 @@ class _PropertyUnitDetailsScreenState extends State<PropertyUnitDetailsScreen> w
     }).toList();
 
     return occupiedData.isEmpty
-        ? const Center(child: Text('No active tenants assigned to units.'))
+        ? const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('No active tenants assigned to units.')))
         : ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             itemCount: occupiedData.length,
             itemBuilder: (ctx, idx) {

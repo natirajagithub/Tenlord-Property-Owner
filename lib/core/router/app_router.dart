@@ -1,3 +1,4 @@
+import 'package:dormly_owner_mobile/ui/views/property_dashboard_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/repositories/repository_provider.dart';
 import '../../ui/view_models/owner_auth_view_model.dart';
@@ -10,7 +11,6 @@ import '../../ui/views/splash/splash_screen.dart';
 import '../../ui/views/auth/owner_login_screen.dart';
 import '../../ui/views/auth/owner_signup_screen.dart';
 import '../../ui/views/auth/owner_verify_otp_screen.dart';
-import '../../ui/views/owner_main_navigation_screen.dart';
 import '../../ui/views/properties/properties_tab.dart';
 import '../../ui/views/properties/add_property_screen.dart';
 import '../../ui/views/properties/property_unit_details_screen.dart';
@@ -59,16 +59,20 @@ class AppRouter {
 
   static final OwnerDashboardViewModel dashboardViewModel =
       OwnerDashboardViewModel(repository: repo)..loadDashboard();
-  static final PropertiesViewModel propertiesViewModel =
-      PropertiesViewModel(repository: repo)..loadProperties();
-  static final TenantsViewModel tenantsViewModel =
-      TenantsViewModel(repository: repo)..loadTenants();
-  static final RentLedgerViewModel ledgerViewModel =
-      RentLedgerViewModel(repository: repo)..loadLedger();
+  static final PropertiesViewModel propertiesViewModel = PropertiesViewModel(
+    repository: repo,
+  )..loadProperties();
+  static final TenantsViewModel tenantsViewModel = TenantsViewModel(
+    repository: repo,
+  )..loadTenants();
+  static final RentLedgerViewModel ledgerViewModel = RentLedgerViewModel(
+    repository: repo,
+  )..loadLedger();
   static final ComplaintsManageViewModel complaintsViewModel =
       ComplaintsManageViewModel(repository: repo)..loadComplaintsAndStaff();
-  static final OwnerAuthViewModel authViewModel =
-      OwnerAuthViewModel(repository: repo);
+  static final OwnerAuthViewModel authViewModel = OwnerAuthViewModel(
+    repository: repo,
+  );
 
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
@@ -79,11 +83,13 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => OwnerLoginScreen(authViewModel: authViewModel),
+        builder: (context, state) =>
+            OwnerLoginScreen(authViewModel: authViewModel),
       ),
       GoRoute(
         path: AppRoutes.signUp,
-        builder: (context, state) => OwnerSignUpScreen(authViewModel: authViewModel),
+        builder: (context, state) =>
+            OwnerSignUpScreen(authViewModel: authViewModel),
       ),
       GoRoute(
         path: AppRoutes.verifyOtp,
@@ -108,7 +114,8 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.rooms,
-        builder: (context, state) => PropertiesScreen(viewModel: propertiesViewModel),
+        builder: (context, state) =>
+            PropertiesScreen(viewModel: propertiesViewModel),
       ),
       GoRoute(
         path: AppRoutes.addProperty,
@@ -139,23 +146,23 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.addTenant,
-        builder: (context, state) => AddTenantWizardScreen(viewModel: tenantsViewModel),
+        builder: (context, state) =>
+            AddTenantWizardScreen(viewModel: tenantsViewModel),
       ),
       GoRoute(
         path: AppRoutes.ledger,
-        builder: (context, state) => RentLedgerScreen(viewModel: ledgerViewModel),
+        builder: (context, state) =>
+            RentLedgerScreen(viewModel: ledgerViewModel),
       ),
       GoRoute(
         path: AppRoutes.complaints,
-        builder: (context, state) => ComplaintsManageScreen(
-          viewModel: complaintsViewModel,
-        ),
+        builder: (context, state) =>
+            ComplaintsManageScreen(viewModel: complaintsViewModel),
       ),
       GoRoute(
         path: AppRoutes.profile,
-        builder: (context, state) => OwnerProfileScreen(
-          authViewModel: authViewModel,
-        ),
+        builder: (context, state) =>
+            OwnerProfileScreen(authViewModel: authViewModel),
       ),
       GoRoute(
         path: AppRoutes.notifications,
@@ -186,10 +193,7 @@ class AppRouter {
         path: AppRoutes.recordPayment,
         builder: (context, state) {
           final data = state.extra as Map<String, dynamic>?;
-          return CollectRentSheet(
-            viewModel: ledgerViewModel,
-            data: data,
-          );
+          return CollectRentSheet(viewModel: ledgerViewModel, data: data);
         },
       ),
       GoRoute(
